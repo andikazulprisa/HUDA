@@ -1,6 +1,40 @@
 import { BookOpen, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 function Quran() {
+  const [ayah, setAyah] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchAyah = async () => {
+      try {
+        console.log("API KEY:", import.meta.env.VITE_SUNNAH_API_KEY);
+
+        const response = await fetch(
+          "https://sunnah.amanahagent.cloud/api/v1/quran/2:255",
+          {
+            headers: {
+              "X-API-Key": import.meta.env.VITE_SUNNAH_API_KEY,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data ayat.");
+        }
+
+        const data = await response.json();
+        setAyah(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAyah();
+  }, []);
   const surahs = [
     {
       number: 1,
@@ -81,6 +115,66 @@ function Quran() {
               />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Featured Ayah */}
+      <section className="px-5 py-14 sm:px-8 lg:px-10">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-8 text-center">
+            <p className="text-xs font-bold tracking-[0.2em] text-amber-600">
+              AYAT PILIHAN
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold text-emerald-950 sm:text-3xl">
+              Ayat Kursi
+            </h2>
+          </div>
+
+          {loading && (
+            <div className="rounded-3xl border border-stone-200 bg-white p-8 text-center">
+              <p className="text-sm text-stone-500">Memuat ayat...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-3xl border border-red-200 bg-red-50 p-8 text-center">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {ayah && !loading && !error && (
+            <article className="rounded-3xl border border-stone-200 bg-white p-7 shadow-sm sm:p-10">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-5">
+                <div>
+                  <p className="font-semibold text-emerald-950">
+                    {ayah.surah_name_en}
+                  </p>
+
+                  <p className="mt-1 text-xs text-stone-500">
+                    Surah {ayah.surah_number} · Ayat {ayah.ayah_number}
+                  </p>
+                </div>
+
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+                  {ayah.ayah_key}
+                </span>
+              </div>
+
+              <p
+                dir="rtl"
+                className="mt-8 text-right font-serif text-2xl leading-[2.2] text-emerald-950 sm:text-3xl"
+              >
+                {ayah.text_arabic}
+              </p>
+
+              <div className="mt-8 border-t border-stone-100 pt-6">
+                <p className="text-sm leading-7 text-stone-600 sm:text-base">
+                  {ayah.text_indonesian}
+                </p>
+              </div>
+            </article>
+          )}
         </div>
       </section>
 
