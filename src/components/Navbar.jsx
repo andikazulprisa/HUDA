@@ -47,7 +47,11 @@ function Navbar() {
           aria-label="HUDA Beranda"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-900 text-sm font-bold text-amber-300">
-            H
+            <img
+              src="assets/logo huda 2.png"
+              alt="logo Huda"
+              className="h-full w-full object-cover object-center"
+            />
           </div>
 
           <div>
