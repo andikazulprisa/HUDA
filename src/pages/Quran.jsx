@@ -1,12 +1,14 @@
 import { BookOpen, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Quran() {
   const [surahs, setSurahs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch daftar seluruh surat
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchSurahs = async () => {
       try {
@@ -73,7 +75,6 @@ function Quran() {
       {/* DAFTAR SURAT */}
       <section className="bg-[#fffdf8] px-6 py-20">
         <div className="mx-auto max-w-6xl">
-          {/* SECTION HEADER */}
           <div className="mb-12">
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
               Jelajahi Al-Qur'an
@@ -88,36 +89,33 @@ function Quran() {
             </p>
           </div>
 
-          {/* LOADING */}
           {loading && (
             <div className="py-12 text-center text-slate-500">
               Memuat daftar surat...
             </div>
           )}
 
-          {/* ERROR */}
           {error && (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
               {error}
             </div>
           )}
 
-          {/* SURAH LIST */}
           {!loading && !error && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {surahs.map((surah) => (
-                <div
+                <button
                   key={surah.number}
-                  className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg"
+                  type="button"
+                  onClick={() => navigate(`/quran/${surah.number}`)}
+                  className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 text-left transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg"
                 >
                   <div className="flex items-start gap-4">
-                    {/* NOMOR SURAT */}
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-sm font-semibold text-emerald-800">
                       {surah.number}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      {/* NAMA SURAT */}
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <h3 className="font-semibold text-emerald-950">
@@ -137,7 +135,6 @@ function Quran() {
                         </p>
                       </div>
 
-                      {/* INFO SURAT */}
                       <div className="mt-4 flex flex-wrap gap-2 text-xs">
                         <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
                           {surah.numberOfVerses} Ayat
@@ -149,7 +146,7 @@ function Quran() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
