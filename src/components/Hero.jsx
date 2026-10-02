@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   ChevronDown,
@@ -9,18 +9,27 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const PRAYER_TIMES = [
+  { name: "Subuh", time: "04:45" },
+  { name: "Zuhur", time: "11:58" },
+  { name: "Asar", time: "15:18" },
+  { name: "Magrib", time: "17:53" },
+  { name: "Isya", time: "19:04" },
+];
+
+const TOTAL_SURAH = 114;
+const API_BASE = "https://quran-api-id.vercel.app";
+
+function timeToSeconds(time) {
+  const [h, m] = time.split(":").map(Number);
+  return h * 3600 + m * 60;
+}
+
 function Hero() {
   const [randomAyah, setRandomAyah] = useState(null);
   const [loadingAyah, setLoadingAyah] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
-
-  const prayerTimes = [
-    { name: "Subuh", time: "04:45" },
-    { name: "Zuhur", time: "11:58" },
-    { name: "Asar", time: "15:18" },
-    { name: "Magrib", time: "17:53" },
-    { name: "Isya", time: "19:04" },
-  ];
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Update waktu setiap detik
   useEffect(() => {
@@ -31,60 +40,99 @@ function Hero() {
     return () => clearInterval(timer);
   }, []);
 
-  // Ambil ayat random
-  const fetchRandomAyah = async () => {
-    try {
-      setLoadingAyah(true);
+  // Ambil ayat random (jalan saat pertama kali & tiap refreshKey berubah)
+  useEffect(() => {
+    const controller = new AbortController();
 
-      // Ambil daftar 114 surah
-      const surahResponse = await fetch(
-        "https://quran-api-id.vercel.app/surah",
-      );
+    async function loadAyah() {
+      try {
+        // Jumlah surah selalu 114, jadi tidak perlu fetch daftar surah
+        const randomSurahNumber = Math.floor(Math.random() * TOTAL_SURAH) + 1;
 
-      if (!surahResponse.ok) {
-        throw new Error("Gagal mengambil daftar surah.");
+        const detailResponse = await fetch(
+          `${API_BASE}/surah/${randomSurahNumber}`,
+          { signal: controller.signal },
+        );
+
+        if (!detailResponse.ok) {
+          throw new Error("Gagal mengambil detail surah.");
+        }
+
+        const detailData = await detailResponse.json();
+        const surah = detailData.data;
+
+        if (!Array.isArray(surah?.verses) || surah.verses.length === 0) {
+          throw new Error("Data ayat surah tidak ditemukan.");
+        }
+
+        const randomVerse =
+          surah.verses[Math.floor(Math.random() * surah.verses.length)];
+
+        if (!randomVerse) {
+          throw new Error("Ayat random tidak ditemukan.");
+        }
+
+        setRandomAyah({
+          surahNumber: surah.number,
+          surahName: surah.name?.transliteration?.id,
+          ayahNumber: randomVerse.number?.inSurah,
+          arabic: randomVerse.text?.arab,
+          translation: randomVerse.translation?.id,
+        });
+      } catch (error) {
+        // Abaikan error karena request dibatalkan
+        if (error.name === "AbortError") return;
+
+        console.error("Gagal mengambil ayat random:", error);
+        setRandomAyah(null);
+      } finally {
+        // Jangan matikan loading kalau request ini sudah dibatalkan
+        if (!controller.signal.aborted) {
+          setLoadingAyah(false);
+        }
       }
-
-      const surahData = await surahResponse.json();
-
-      // Pilih surah secara random
-      const randomSurah =
-        surahData[Math.floor(Math.random() * surahData.length)];
-
-      // Ambil detail surah
-      const detailResponse = await fetch(
-        `https://quran-api-id.vercel.app/surah/${randomSurah.number}`,
-      );
-
-      if (!detailResponse.ok) {
-        throw new Error("Gagal mengambil detail surah.");
-      }
-
-      const detailData = await detailResponse.json();
-      const surah = detailData.data;
-
-      // Pilih ayat secara random
-      const randomVerse =
-        surah.verses[Math.floor(Math.random() * surah.verses.length)];
-
-      setRandomAyah({
-        surahNumber: surah.number,
-        surahName: surah.name?.transliteration?.id,
-        ayahNumber: randomVerse.number.inSurah,
-        arabic: randomVerse.text?.arab,
-        translation: randomVerse.translation?.id,
-      });
-    } catch (error) {
-      console.error("Gagal mengambil ayat random:", error);
-    } finally {
-      setLoadingAyah(false);
     }
+
+    loadAyah();
+
+    return () => controller.abort();
+  }, [refreshKey]);
+
+  // Dipanggil dari tombol (event handler, jadi aman)
+  const handleRefreshAyah = () => {
+    setLoadingAyah(true);
+    setRefreshKey((key) => key + 1);
   };
 
-  // Ambil ayat pertama kali
-  useEffect(() => {
-    fetchRandomAyah();
-  }, []);
+  // Hitung salat berikutnya & hitung mundur
+  const { nextPrayerName, countdownText } = useMemo(() => {
+    const nowSeconds =
+      currentTime.getHours() * 3600 +
+      currentTime.getMinutes() * 60 +
+      currentTime.getSeconds();
+
+    let next = PRAYER_TIMES.find((p) => timeToSeconds(p.time) > nowSeconds);
+    let targetSeconds;
+
+    if (next) {
+      targetSeconds = timeToSeconds(next.time);
+    } else {
+      // Sudah lewat Isya -> berikutnya Subuh besok
+      next = PRAYER_TIMES[0];
+      targetSeconds = timeToSeconds(next.time) + 24 * 3600;
+    }
+
+    const diff = targetSeconds - nowSeconds;
+    const hours = Math.floor(diff / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+
+    return {
+      nextPrayerName: next.name,
+      countdownText: `${String(hours).padStart(2, "0")}j ${String(
+        minutes,
+      ).padStart(2, "0")}m lagi`,
+    };
+  }, [currentTime]);
 
   const formattedTime = currentTime.toLocaleTimeString("id-ID", {
     hour: "2-digit",
@@ -113,12 +161,11 @@ function Hero() {
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-emerald-950/80" />
 
-      {/* Gradient */}
+      {/* Gradient (Tailwind v4. Untuk v3 pakai bg-gradient-to-r) */}
       <div className="absolute inset-0 bg-linear-to-r from-emerald-950/95 via-emerald-950/75 to-emerald-950/55" />
 
       {/* Decorative pattern */}
       <div className="absolute -left-32 top-20 h-96 w-96 rounded-full border border-amber-200/10" />
-
       <div className="absolute -bottom-40 right-10 h-128 w-lg rounded-full border border-amber-200/10" />
 
       {/* Content */}
@@ -134,9 +181,7 @@ function Hero() {
             {loadingAyah ? (
               <div className="space-y-5">
                 <div className="h-20 max-w-2xl animate-pulse rounded-xl bg-white/10" />
-
                 <div className="h-24 max-w-2xl animate-pulse rounded-xl bg-white/10" />
-
                 <div className="h-6 w-64 animate-pulse rounded-lg bg-white/10" />
               </div>
             ) : randomAyah ? (
@@ -163,7 +208,9 @@ function Hero() {
 
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
 
-                  <span className="text-sm text-emerald-200">Al-Qur'an</span>
+                  <span className="text-sm text-emerald-200">
+                    Al-Qur&apos;an
+                  </span>
                 </div>
 
                 <p className="mt-8 max-w-xl text-base leading-7 text-emerald-100/80">
@@ -183,7 +230,7 @@ function Hero() {
 
                   <button
                     type="button"
-                    onClick={fetchRandomAyah}
+                    onClick={handleRefreshAyah}
                     disabled={loadingAyah}
                     className="group inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
                   >
@@ -199,7 +246,16 @@ function Hero() {
               </>
             ) : (
               <div className="rounded-2xl border border-white/10 bg-white/10 p-6 text-emerald-100">
-                Gagal memuat pengingat. Silakan coba lagi.
+                <p>Gagal memuat pengingat. Silakan coba lagi.</p>
+
+                <button
+                  type="button"
+                  onClick={handleRefreshAyah}
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-300 px-5 py-2.5 text-sm font-semibold text-emerald-950 transition hover:bg-amber-200"
+                >
+                  <RefreshCw size={16} />
+                  Coba Lagi
+                </button>
               </div>
             )}
           </div>
@@ -207,7 +263,7 @@ function Hero() {
           {/* Right: Time and prayer */}
           <div className="w-full lg:justify-self-end">
             <div className="rounded-3xl border border-white/15 bg-white/10 p-5 shadow-2xl backdrop-blur-xl sm:p-6">
-              {/* Date */}
+              {/* Time */}
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm text-emerald-100/70">Waktu saat ini</p>
@@ -238,22 +294,20 @@ function Hero() {
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="font-semibold text-white">Waktu Salat</h3>
-
                   <span className="text-xs text-emerald-100/60">Hari ini</span>
                 </div>
 
                 <div className="space-y-1">
-                  {prayerTimes.map((prayer) => (
+                  {PRAYER_TIMES.map((prayer) => (
                     <div
                       key={prayer.name}
                       className={`flex items-center justify-between rounded-xl px-4 py-2 ${
-                        prayer.name === "Isya"
+                        prayer.name === nextPrayerName
                           ? "bg-amber-300/15 text-white"
                           : "text-emerald-100"
                       }`}
                     >
                       <span className="text-sm">{prayer.name}</span>
-
                       <span className="font-semibold">{prayer.time}</span>
                     </div>
                   ))}
@@ -264,10 +318,12 @@ function Hero() {
                 <p className="text-xs text-amber-100/70">Salat berikutnya</p>
 
                 <div className="mt-1 flex items-center justify-between">
-                  <span className="font-semibold text-amber-100">Subuh</span>
+                  <span className="font-semibold text-amber-100">
+                    {nextPrayerName}
+                  </span>
 
                   <span className="text-sm font-medium text-amber-200">
-                    09j 03m lagi
+                    {countdownText}
                   </span>
                 </div>
               </div>
