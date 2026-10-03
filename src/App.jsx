@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Navbar from "./components/Navbar";
+
 import Home from "./pages/Home";
 import Quran from "./pages/Quran";
 import QuranDetail from "./pages/QuranDetail";
@@ -11,14 +13,14 @@ import Sunnah from "./pages/Sunnah";
 function App() {
   return (
     <BrowserRouter>
+      <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/quran" element={<Quran />} />
         <Route path="/quran/:number" element={<QuranDetail />} />
-
         <Route path="/hadith" element={<Hadith />} />
         <Route path="/hadith/:collection/:number" element={<HadithDetail />} />
-
         <Route path="/dua" element={<Dua />} />
         <Route path="/sunnah" element={<Sunnah />} />
       </Routes>

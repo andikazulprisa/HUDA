@@ -1,6 +1,6 @@
 import { Menu, Moon, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -68,13 +68,19 @@ function Navbar() {
         {/* Desktop navigation */}
         <div className="hidden items-center gap-8 lg:flex">
           {navLinks.map((link) => (
-            <Link
+            <NavLink
               key={link.name}
               to={link.to}
-              className="text-sm font-medium text-stone-600 transition-colors hover:text-emerald-800"
+              className={({ isActive }) =>
+                `text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-emerald-900"
+                    : "text-stone-600 hover:text-emerald-800"
+                }`
+              }
             >
               {link.name}
-            </Link>
+            </NavLink>
           ))}
         </div>
 
