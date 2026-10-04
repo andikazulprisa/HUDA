@@ -5,6 +5,7 @@ import {
   MoonStar,
   ScrollText,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function ExploreSection() {
   const categories = [
@@ -45,17 +46,17 @@ function ExploreSection() {
   return (
     <section
       id="jelajahi"
-      className="relative overflow-hidden bg-[#fffdf8] py-24 sm:py-28"
+      className="relative overflow-hidden bg-[#fffdf8] py-20 sm:py-24 lg:py-28"
     >
       {/* Decorative background */}
-      <div className="absolute -left-32 top-20 h-72 w-72 rounded-full bg-emerald-100/40 blur-3xl" />
+      <div className="absolute -left-32 top-16 h-72 w-72 rounded-full bg-emerald-100/40 blur-3xl" />
 
       <div className="absolute -right-32 bottom-10 h-80 w-80 rounded-full bg-amber-100/40 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         {/* Heading */}
         <div className="mx-auto max-w-2xl text-center">
-          <div className="mb-5 inline-flex items-center gap-3">
+          <div className="mb-4 inline-flex items-center gap-3">
             <span className="h-px w-8 bg-amber-500/70" />
 
             <span className="text-xs font-semibold tracking-[0.22em] text-emerald-800">
@@ -69,56 +70,56 @@ function ExploreSection() {
             Temukan Pengetahuan
           </h2>
 
-          <p className="mt-5 text-base leading-7 text-stone-600 sm:text-lg">
+          <p className="mt-4 text-base leading-7 text-stone-600 sm:text-lg">
             Pelajari Al-Qur&apos;an, hadis, doa, dan amalan sunnah dalam satu
             tempat untuk menemani perjalananmu setiap hari.
           </p>
         </div>
 
         {/* Category cards */}
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
           {categories.map((category) => {
             const Icon = category.icon;
 
             return (
-              <a
+              <Link
                 key={category.title}
-                href={category.href}
-                className="group relative flex min-h-82.5 flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-emerald-200 hover:shadow-xl"
+                to={category.href}
+                className="group relative flex min-h-75 flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-700/30 focus:ring-offset-2"
               >
                 {/* Decorative circle */}
                 <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-emerald-50 transition-transform duration-500 group-hover:scale-125" />
 
                 {/* Icon */}
-                <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-900 text-amber-200 shadow-lg shadow-emerald-900/15">
-                  <Icon size={25} strokeWidth={1.7} />
+                <div className="relative flex h-13 w-13 items-center justify-center rounded-2xl bg-emerald-900 text-amber-200 shadow-md shadow-emerald-900/10 transition-transform duration-300 group-hover:scale-[1.03]">
+                  <Icon size={24} strokeWidth={1.7} />
                 </div>
 
                 {/* Content */}
-                <div className="relative mt-7">
+                <div className="relative mt-6">
                   <h3 className="text-xl font-bold text-emerald-950">
                     {category.title}
                   </h3>
 
-                  <p className="mt-3 text-sm leading-6 text-stone-600">
+                  <p className="mt-2.5 text-sm leading-6 text-stone-600">
                     {category.description}
                   </p>
                 </div>
 
-                {/* Link */}
-                <div className="relative mt-auto flex items-center justify-between pt-8">
-                  <span className="text-sm font-semibold text-emerald-800">
+                {/* Link indicator */}
+                <div className="relative mt-auto flex items-center justify-between pt-7">
+                  <span className="text-sm font-semibold text-emerald-800 transition-colors group-hover:text-emerald-950">
                     {category.label}
                   </span>
 
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 text-emerald-800 transition-all duration-300 group-hover:bg-emerald-900 group-hover:text-amber-200">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 text-emerald-800 transition-all duration-300 group-hover:border-emerald-900 group-hover:bg-emerald-900 group-hover:text-amber-200">
                     <ArrowUpRight
-                      size={18}
+                      size={17}
                       className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
                   </span>
                 </div>
-              </a>
+              </Link>
             );
           })}
         </div>
