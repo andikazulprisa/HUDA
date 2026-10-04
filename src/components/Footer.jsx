@@ -1,5 +1,6 @@
 import { Heart, Mail } from "lucide-react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
+import logoHuda from "../assets/logo huda 2.png";
 
 function Footer() {
   const exploreLinks = [
@@ -22,8 +23,12 @@ function Footer() {
           {/* Brand */}
           <div className="max-w-sm">
             <a href="#" className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-900 text-sm font-bold text-amber-300 ring-1 ring-white/10">
-                H
+              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-emerald-900 ring-1 ring-emerald-900/10">
+                <img
+                  src={logoHuda}
+                  alt="Logo HUDA"
+                  className="h-full w-full scale-150 object-cover"
+                />
               </div>
 
               <div>

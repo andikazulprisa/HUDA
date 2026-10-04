@@ -1,6 +1,7 @@
-import { Menu, Moon, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import logoHuda from "../assets/logo huda 2.png";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,7 +21,6 @@ function Navbar() {
 
   const navLinks = [
     { name: "Beranda", to: "/" },
-    { name: "Jelajahi", to: "/#jelajahi" },
     { name: "Al-Qur'an", to: "/quran" },
     { name: "Hadis", to: "/hadith" },
     { name: "Doa", to: "/dua" },
@@ -46,11 +46,11 @@ function Navbar() {
           className="flex items-center gap-3"
           aria-label="HUDA Beranda"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-900 text-sm font-bold text-amber-300">
+          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-emerald-900 ring-1 ring-emerald-900/10">
             <img
-              src="assets/logo huda 2.png"
-              alt="logo Huda"
-              className="h-full w-full object-cover object-center"
+              src={logoHuda}
+              alt="Logo HUDA"
+              className="h-full w-full scale-150 object-cover"
             />
           </div>
 
@@ -71,6 +71,7 @@ function Navbar() {
             <NavLink
               key={link.name}
               to={link.to}
+              end={link.to === "/"}
               className={({ isActive }) =>
                 `text-sm font-medium transition-colors ${
                   isActive
@@ -84,30 +85,12 @@ function Navbar() {
           ))}
         </div>
 
-        {/* Right menu */}
-        <div className="hidden items-center gap-3 lg:flex">
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 text-stone-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800"
-            aria-label="Ubah tema"
-          >
-            <Moon size={18} />
-          </button>
-
-          <Link
-            to="/quran"
-            className="rounded-full bg-emerald-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
-          >
-            Mulai Jelajahi
-          </Link>
-        </div>
-
         {/* Mobile button */}
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 text-stone-700 lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 text-stone-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 lg:hidden"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Buka menu"
+          aria-label={isMenuOpen ? "Tutup menu" : "Buka menu"}
           aria-expanded={isMenuOpen}
         >
           {isMenuOpen ? <X size={21} /> : <Menu size={21} />}
@@ -119,23 +102,22 @@ function Navbar() {
         <div className="border-t border-stone-200 bg-[#fffdf8] px-5 py-5 lg:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-1">
             {navLinks.map((link) => (
-              <Link
+              <NavLink
                 key={link.name}
                 to={link.to}
+                end={link.to === "/"}
                 onClick={handleMobileLinkClick}
-                className="rounded-xl px-4 py-3 text-sm font-medium text-stone-700 transition hover:bg-emerald-50 hover:text-emerald-900"
+                className={({ isActive }) =>
+                  `rounded-xl px-4 py-3 text-sm font-medium transition ${
+                    isActive
+                      ? "bg-emerald-50 text-emerald-900"
+                      : "text-stone-700 hover:bg-emerald-50 hover:text-emerald-900"
+                  }`
+                }
               >
                 {link.name}
-              </Link>
+              </NavLink>
             ))}
-
-            <Link
-              to="/quran"
-              onClick={handleMobileLinkClick}
-              className="mt-3 rounded-xl bg-emerald-900 px-4 py-3 text-center text-sm font-semibold text-white"
-            >
-              Mulai Jelajahi
-            </Link>
           </div>
         </div>
       )}
