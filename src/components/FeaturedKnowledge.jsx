@@ -39,7 +39,10 @@ function FeaturedKnowledge() {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-emerald-950 py-24 sm:py-28">
+    <section
+      id="pengetahuan"
+      className="relative overflow-hidden bg-emerald-950 py-24 sm:py-28"
+    >
       {/* Decorative background */}
       <div className="absolute -left-32 top-10 h-96 w-96 rounded-full border border-amber-200/10" />
 

@@ -1,6 +1,7 @@
 import {
   ArrowUpRight,
   BookOpen,
+  ChevronDown,
   HandHeart,
   MoonStar,
   ScrollText,
@@ -50,11 +51,10 @@ function ExploreSection() {
     >
       {/* Decorative background */}
       <div className="absolute -left-32 top-16 h-72 w-72 rounded-full bg-emerald-100/40 blur-3xl" />
-
       <div className="absolute -right-32 bottom-10 h-80 w-80 rounded-full bg-amber-100/40 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-        {/* Heading */}
+        {/* Section heading */}
         <div className="mx-auto max-w-2xl text-center">
           <div className="mb-4 inline-flex items-center gap-3">
             <span className="h-px w-8 bg-amber-500/70" />
@@ -85,7 +85,7 @@ function ExploreSection() {
               <Link
                 key={category.title}
                 to={category.href}
-                className="group relative flex min-h-75 flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-700/30 focus:ring-offset-2"
+                className="group relative flex min-h-75 flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg"
               >
                 {/* Decorative circle */}
                 <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-emerald-50 transition-transform duration-500 group-hover:scale-125" />
@@ -106,7 +106,7 @@ function ExploreSection() {
                   </p>
                 </div>
 
-                {/* Link indicator */}
+                {/* Card action */}
                 <div className="relative mt-auto flex items-center justify-between pt-7">
                   <span className="text-sm font-semibold text-emerald-800 transition-colors group-hover:text-emerald-950">
                     {category.label}
@@ -123,6 +123,15 @@ function ExploreSection() {
             );
           })}
         </div>
+
+        {/* Scroll indicator */}
+        <a
+          href="#pengetahuan"
+          className="mx-auto mt-14 flex w-fit flex-col items-center gap-1.5 text-xs text-emerald-800/60 transition hover:text-emerald-950"
+        >
+          Lihat Pengetahuan Pilihan
+          <ChevronDown size={17} className="animate-bounce" />
+        </a>
       </div>
     </section>
   );
