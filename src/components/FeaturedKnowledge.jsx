@@ -1,10 +1,12 @@
 import {
   ArrowUpRight,
   BookOpen,
+  ChevronDown,
   HandHeart,
   Quote,
   ScrollText,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function FeaturedKnowledge() {
   const knowledgeItems = [
@@ -41,7 +43,7 @@ function FeaturedKnowledge() {
   return (
     <section
       id="pengetahuan"
-      className="relative overflow-hidden bg-emerald-950 py-24 sm:py-28"
+      className="relative overflow-hidden bg-emerald-950 py-20 sm:py-24 lg:py-28"
     >
       {/* Decorative background */}
       <div className="absolute -left-32 top-10 h-96 w-96 rounded-full border border-amber-200/10" />
@@ -53,7 +55,7 @@ function FeaturedKnowledge() {
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         {/* Heading */}
         <div className="mx-auto max-w-2xl text-center">
-          <div className="mb-5 inline-flex items-center gap-3">
+          <div className="mb-4 inline-flex items-center gap-3">
             <span className="h-px w-8 bg-amber-300/70" />
 
             <span className="text-xs font-semibold tracking-[0.22em] text-amber-200">
@@ -67,27 +69,27 @@ function FeaturedKnowledge() {
             Satu Ilmu untuk Hari Ini
           </h2>
 
-          <p className="mt-5 text-base leading-7 text-emerald-100/70 sm:text-lg">
+          <p className="mt-4 text-base leading-7 text-emerald-100/70 sm:text-lg">
             Luangkan sejenak untuk membaca, memahami, dan mengambil hikmah dari
             ayat, hadis, serta doa pilihan.
           </p>
         </div>
 
-        {/* Cards */}
-        <div className="mt-14 grid gap-5 lg:grid-cols-3">
+        {/* Knowledge cards */}
+        <div className="mt-12 grid gap-5 lg:mt-14 lg:grid-cols-3">
           {knowledgeItems.map((item) => {
             const Icon = item.icon;
 
             return (
-              <a
+              <Link
                 key={item.category}
-                href={item.href}
-                className="group relative flex min-h-97.5 flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-7 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-amber-200/30 hover:bg-white/10"
+                to={item.href}
+                className="group relative flex min-h-90 flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-200/30 hover:bg-white/10"
               >
                 {/* Quote decoration */}
                 <Quote
                   className="absolute -right-3 -top-3 text-white/5"
-                  size={130}
+                  size={120}
                   strokeWidth={1}
                 />
 
@@ -103,12 +105,12 @@ function FeaturedKnowledge() {
                 </div>
 
                 {/* Content */}
-                <div className="relative mt-8">
+                <div className="relative mt-7">
                   <h3 className="text-xl font-semibold leading-8 text-white">
                     “{item.title}”
                   </h3>
 
-                  <p className="mt-5 text-sm leading-6 text-emerald-100/65">
+                  <p className="mt-4 text-sm leading-6 text-emerald-100/65">
                     {item.description}
                   </p>
                 </div>
@@ -120,33 +122,31 @@ function FeaturedKnowledge() {
                   </p>
 
                   <div className="mt-5 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-white">
+                    <span className="text-sm font-semibold text-white transition-colors group-hover:text-amber-100">
                       Baca Selengkapnya
                     </span>
 
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-amber-200 transition-all duration-300 group-hover:bg-amber-300 group-hover:text-emerald-950">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-amber-200 transition-all duration-300 group-hover:border-amber-300 group-hover:bg-amber-300 group-hover:text-emerald-950">
                       <ArrowUpRight
-                        size={18}
+                        size={17}
                         className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                       />
                     </span>
                   </div>
                 </div>
-              </a>
+              </Link>
             );
           })}
         </div>
 
-        {/* Bottom CTA */}
-        <div className="mt-12 text-center">
-          <a
-            href="/jelajahi"
-            className="inline-flex items-center gap-2 rounded-full border border-amber-200/20 bg-white/5 px-6 py-3 text-sm font-semibold text-amber-100 transition hover:bg-white/10"
-          >
-            Jelajahi Lebih Banyak
-            <ArrowUpRight size={17} />
-          </a>
-        </div>
+        {/* Scroll indicator */}
+        <a
+          href="#why-huda"
+          className="mx-auto mt-14 flex w-fit flex-col items-center gap-1.5 text-xs text-emerald-100/60 transition hover:text-white"
+        >
+          Kenapa HUDA?
+          <ChevronDown size={17} className="animate-bounce" />
+        </a>
       </div>
     </section>
   );

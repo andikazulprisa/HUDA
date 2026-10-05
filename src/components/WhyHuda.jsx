@@ -23,7 +23,10 @@ function WhyHuda() {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-[#fffdf8] py-24 sm:py-28">
+    <section
+      id="why-huda"
+      className="relative overflow-hidden bg-[#fffdf8] py-24 sm:py-28"
+    >
       {/* Decorative background */}
       <div className="absolute -left-40 bottom-0 h-96 w-96 rounded-full bg-emerald-100/40 blur-3xl" />
 
