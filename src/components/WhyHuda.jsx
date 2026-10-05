@@ -1,109 +1,83 @@
-import { ArrowRight, BookOpenCheck, Compass, Sparkles } from "lucide-react";
+import { BookOpen, Heart, Sparkles } from "lucide-react";
 
 function WhyHuda() {
-  const benefits = [
-    {
-      icon: Compass,
-      title: "Mudah Dijelajahi",
-      description:
-        "Temukan Al-Qur'an, hadis, doa, dan amalan dalam pengalaman yang sederhana dan nyaman.",
-    },
-    {
-      icon: BookOpenCheck,
-      title: "Ilmu yang Terorganisir",
-      description:
-        "Konten disusun berdasarkan kategori agar lebih mudah ditemukan dan dipelajari.",
-    },
-    {
-      icon: Sparkles,
-      title: "Pengingat Setiap Hari",
-      description:
-        "Temukan ayat, hadis, dan doa pilihan yang dapat menemani aktivitas harianmu.",
-    },
-  ];
-
   return (
     <section
       id="why-huda"
-      className="relative overflow-hidden bg-[#fffdf8] py-24 sm:py-28"
+      className="relative overflow-hidden bg-[#fffdf8] py-24 sm:py-28 lg:py-32"
     >
       {/* Decorative background */}
-      <div className="absolute -left-40 bottom-0 h-96 w-96 rounded-full bg-emerald-100/40 blur-3xl" />
+      <div className="absolute -left-40 top-20 h-96 w-96 rounded-full bg-emerald-100/40 blur-3xl" />
 
-      <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-amber-100/30 blur-3xl" />
+      <div className="absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-amber-100/30 blur-3xl" />
 
-      <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-        <div className="grid items-center gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-          {/* Left content */}
-          <div>
-            <div className="mb-5 inline-flex items-center gap-3">
-              <span className="h-px w-8 bg-amber-500/70" />
+      <div className="relative mx-auto max-w-4xl px-5 text-center sm:px-8 lg:px-10">
+        {/* Label */}
+        <div className="mb-5 inline-flex items-center gap-3">
+          <span className="h-px w-8 bg-amber-500/70" />
 
-              <span className="text-xs font-semibold tracking-[0.22em] text-emerald-800">
-                KENAPA HUDA?
-              </span>
-            </div>
+          <span className="text-xs font-semibold tracking-[0.22em] text-emerald-800">
+            TENTANG HUDA
+          </span>
 
-            <h2 className="max-w-xl text-3xl font-bold leading-tight tracking-tight text-emerald-950 sm:text-4xl lg:text-5xl">
-              Ilmu yang Lebih Dekat dengan Kehidupan Sehari-hari
-            </h2>
+          <span className="h-px w-8 bg-amber-500/70" />
+        </div>
 
-            <p className="mt-6 max-w-xl text-base leading-8 text-stone-600 sm:text-lg">
-              HUDA hadir sebagai ruang digital untuk membantu kamu menemukan,
-              membaca, dan mempelajari pengetahuan Islam dengan lebih mudah.
-            </p>
+        {/* Heading */}
+        <h2 className="text-3xl font-bold leading-tight tracking-tight text-emerald-950 sm:text-4xl lg:text-5xl">
+          Sebuah Pengingat untuk Kembali Dekat kepada Allah
+        </h2>
 
-            <p className="mt-4 max-w-xl text-base leading-8 text-stone-500">
-              Mulai dari pengingat singkat hingga materi yang bisa dijelajahi
-              lebih dalam, semuanya tersedia dalam satu tempat yang sederhana.
-            </p>
+        {/* Main message */}
+        <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-stone-600 sm:text-lg">
+          HUDA dibuat dari sebuah keinginan sederhana: menjadi pengingat kecil
+          di tengah kesibukan sehari-hari untuk kembali membaca, memahami, dan
+          merenungkan ilmu Islam.
+        </p>
 
-            <a
-              href="#jelajahi"
-              className="group mt-9 inline-flex items-center gap-3 rounded-full bg-emerald-900 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
-            >
-              Mulai Menjelajah
-              <ArrowRight
-                size={18}
-                className="transition-transform duration-300 group-hover:translate-x-1"
-              />
-            </a>
+        <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-stone-500 sm:text-lg">
+          Terkadang kita hanya membutuhkan satu ayat, satu hadis, satu doa, atau
+          satu nasihat untuk mengingat kembali kepada siapa kita akan kembali.
+        </p>
+
+        {/* Divider */}
+        <div className="mx-auto my-10 flex items-center justify-center gap-4">
+          <span className="h-px w-16 bg-stone-200" />
+
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-900 text-amber-200 shadow-sm">
+            <Heart size={18} strokeWidth={1.7} />
           </div>
 
-          {/* Right benefits */}
-          <div className="space-y-5">
-            {benefits.map((benefit, index) => {
-              const Icon = benefit.icon;
+          <span className="h-px w-16 bg-stone-200" />
+        </div>
 
-              return (
-                <div
-                  key={benefit.title}
-                  className="group relative overflow-hidden rounded-3xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg sm:p-7"
-                >
-                  {/* Number */}
-                  <span className="absolute right-6 top-5 text-5xl font-bold text-emerald-950/4">
-                    0{index + 1}
-                  </span>
+        {/* Closing message */}
+        <p className="mx-auto max-w-2xl text-base font-medium leading-8 text-emerald-900 sm:text-lg">
+          Semoga HUDA dapat menjadi ruang kecil yang menemani langkah untuk
+          terus belajar, mengingat, dan mendekat kepada Allah — sedikit demi
+          sedikit, setiap hari.
+        </p>
 
-                  <div className="relative flex gap-5">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-900 text-amber-200 shadow-lg shadow-emerald-900/10">
-                      <Icon size={24} strokeWidth={1.7} />
-                    </div>
+        {/* Simple principles */}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-sm text-stone-500">
+          <span className="inline-flex items-center gap-2">
+            <BookOpen size={16} className="text-emerald-800" />
+            Membaca
+          </span>
 
-                    <div className="pr-8">
-                      <h3 className="text-lg font-bold text-emerald-950">
-                        {benefit.title}
-                      </h3>
+          <span className="hidden text-stone-300 sm:inline">•</span>
 
-                      <p className="mt-2 text-sm leading-6 text-stone-600">
-                        {benefit.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <span className="inline-flex items-center gap-2">
+            <Sparkles size={16} className="text-amber-600" />
+            Merenungkan
+          </span>
+
+          <span className="hidden text-stone-300 sm:inline">•</span>
+
+          <span className="inline-flex items-center gap-2">
+            <Heart size={16} className="text-emerald-800" />
+            Mendekat
+          </span>
         </div>
       </div>
     </section>
