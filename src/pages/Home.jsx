@@ -12,8 +12,8 @@ function Home() {
         <Hero />
         <ExploreSection />
         <FeaturedKnowledge />
-        <WhyHuda />
         <CTASection />
+        <WhyHuda />
       </main>
 
       <Footer />
