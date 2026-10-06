@@ -1,33 +1,34 @@
 import { Heart, Mail } from "lucide-react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import logoHuda from "../assets/logo huda 2.png";
 
 function Footer() {
   const exploreLinks = [
     { name: "Al-Qur'an", href: "/quran" },
-    { name: "Hadis", href: "/hadis" },
-    { name: "Doa", href: "/doa" },
+    { name: "Hadis", href: "/hadith" },
+    { name: "Doa", href: "/dua" },
     { name: "Amalan Sunnah", href: "/sunnah" },
   ];
 
-  const informationLinks = [
-    { name: "Tentang HUDA", href: "/tentang" },
-    { name: "Jelajahi Ilmu", href: "/jelajahi" },
-    { name: "Sumber Referensi", href: "/referensi" },
+  const aboutLinks = [
+    { name: "Tentang HUDA", href: "/why-huda" },
+    { name: "Jelajahi Ilmu", href: "/#jelajahi" },
+    { name: "Pengetahuan Pilihan", href: "/#pengetahuan" },
   ];
 
   return (
     <footer className="bg-[#062b22] text-white">
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
           {/* Brand */}
           <div className="max-w-sm">
-            <a href="#" className="flex items-center gap-3">
-              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-emerald-900 ring-1 ring-emerald-900/10">
+            <Link to="/" className="group inline-flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-900 ring-1 ring-white/10">
                 <img
                   src={logoHuda}
                   alt="Logo HUDA"
-                  className="h-full w-full scale-150 object-cover"
+                  className="h-full w-full scale-150 object-cover transition-transform duration-300 group-hover:scale-[1.6]"
                 />
               </div>
 
@@ -40,7 +41,7 @@ function Footer() {
                   Mulai Hari dengan Petunjuk
                 </p>
               </div>
-            </a>
+            </Link>
 
             <p className="mt-6 text-sm leading-7 text-emerald-100/60">
               Ruang digital untuk membantu menemukan, membaca, dan mempelajari
@@ -48,42 +49,39 @@ function Footer() {
               tempat.
             </p>
 
-            {/* Social & contact links */}
+            {/* Social & contact */}
             <div className="mt-7 flex items-center gap-3">
-              {/* LinkedIn */}
               <a
                 href="https://www.linkedin.com/in/andika-zulprisa"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100/70 transition hover:-translate-y-1 hover:border-amber-200/30 hover:bg-white/10 hover:text-amber-200"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100/70 transition-all duration-300 hover:-translate-y-1 hover:border-amber-200/30 hover:bg-white/10 hover:text-amber-200"
               >
                 <FaLinkedinIn size={17} />
               </a>
 
-              {/* GitHub */}
               <a
                 href="https://github.com/andikazulprisa"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100/70 transition hover:-translate-y-1 hover:border-amber-200/30 hover:bg-white/10 hover:text-amber-200"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100/70 transition-all duration-300 hover:-translate-y-1 hover:border-amber-200/30 hover:bg-white/10 hover:text-amber-200"
               >
                 <FaGithub size={18} />
               </a>
 
-              {/* Email */}
               <a
-                href="andikazulprisa27@gmail.com"
+                href="mailto:andikazulprisa27@gmail.com"
                 aria-label="Email"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100/70 transition hover:-translate-y-1 hover:border-amber-200/30 hover:bg-white/10 hover:text-amber-200"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100/70 transition-all duration-300 hover:-translate-y-1 hover:border-amber-200/30 hover:bg-white/10 hover:text-amber-200"
               >
                 <Mail size={18} />
               </a>
             </div>
           </div>
 
-          {/* Explore links */}
+          {/* Explore */}
           <div>
             <h3 className="text-sm font-semibold tracking-wide text-white">
               Jelajahi
@@ -92,32 +90,32 @@ function Footer() {
             <ul className="mt-6 space-y-4">
               {exploreLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-emerald-100/55 transition hover:text-amber-200"
+                  <Link
+                    to={link.href}
+                    className="text-sm text-emerald-100/55 transition-colors hover:text-amber-200"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Information links */}
+          {/* About */}
           <div>
             <h3 className="text-sm font-semibold tracking-wide text-white">
-              Informasi
+              Tentang
             </h3>
 
             <ul className="mt-6 space-y-4">
-              {informationLinks.map((link) => (
+              {aboutLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-emerald-100/55 transition hover:text-amber-200"
+                  <Link
+                    to={link.href}
+                    className="text-sm text-emerald-100/55 transition-colors hover:text-amber-200"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -126,7 +124,7 @@ function Footer() {
 
         {/* Bottom footer */}
         <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-emerald-100/40">
+          <p className="text-xs leading-5 text-emerald-100/40">
             © {new Date().getFullYear()} HUDA. Dibuat untuk belajar dan berbagi
             ilmu.
           </p>
