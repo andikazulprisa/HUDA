@@ -9,6 +9,7 @@ import Hadith from "./pages/Hadith";
 import HadithDetail from "./pages/HadithDetail";
 import Dua from "./pages/Dua";
 import Sunnah from "./pages/Sunnah";
+import QuranJuz from "./pages/QuranJuz";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/quran" element={<Quran />} />
+        <Route path="/quran/juz/:juzNumber" element={<QuranJuz />} />
         <Route path="/quran/:number" element={<QuranDetail />} />
         <Route path="/hadith" element={<Hadith />} />
         <Route path="/hadith/:collection/:number" element={<HadithDetail />} />
