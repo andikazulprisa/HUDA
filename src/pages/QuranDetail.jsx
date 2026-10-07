@@ -114,17 +114,17 @@ function QuranDetail() {
       </section>
 
       {/* AYAT */}
-      <section className="px-6 py-16">
+      <section className="px-5 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-4xl">
-          <div className="space-y-6">
+          <div className="space-y-3">
             {surah.verses.map((verse) => (
               <article
                 key={verse.number.inSurah}
-                className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm md:p-10"
+                className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm md:p-7"
               >
                 {/* AYAT HEADER */}
-                <div className="mb-8 flex items-center justify-between">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-sm font-semibold text-emerald-800">
+                <div className="mb-5 flex items-center justify-between">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-xs font-semibold text-emerald-800">
                     {verse.number.inSurah}
                   </div>
 
@@ -133,9 +133,9 @@ function QuranDetail() {
                       href={verse.audio.primary}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-xs font-medium text-emerald-800 transition hover:bg-emerald-100"
+                      className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800 transition hover:bg-emerald-100"
                     >
-                      <Play size={14} />
+                      <Play size={13} />
                       Dengarkan
                     </a>
                   )}
@@ -144,19 +144,19 @@ function QuranDetail() {
                 {/* ARABIC */}
                 <p
                   dir="rtl"
-                  className="text-right font-serif text-3xl leading-[2.3] text-emerald-950 md:text-4xl"
+                  className="text-right font-serif text-2xl leading-[2.15] text-emerald-950 sm:text-3xl md:text-4xl"
                 >
                   {verse.text.arab}
                 </p>
 
                 {/* TRANSLITERATION */}
-                <p className="mt-8 text-sm italic leading-7 text-slate-400">
+                <p className="mt-5 text-sm italic leading-6 text-stone-400">
                   {verse.text.transliteration.en}
                 </p>
 
                 {/* TRANSLATION */}
-                <div className="mt-6 border-t border-slate-100 pt-6">
-                  <p className="text-base leading-8 text-slate-700 md:text-lg">
+                <div className="mt-4 border-t border-stone-100 pt-4">
+                  <p className="text-sm leading-7 text-stone-600 sm:text-base sm:leading-8">
                     {verse.translation.id}
                   </p>
                 </div>

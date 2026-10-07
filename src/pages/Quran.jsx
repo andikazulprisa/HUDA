@@ -258,7 +258,13 @@ function Quran() {
                   <button
                     key={surah.number}
                     type="button"
-                    onClick={() => navigate(`/quran/${surah.number}`)}
+                    onClick={() =>
+                      navigate(
+                        selectedJuzData
+                          ? `/quran/${surah.number}?juz=${selectedJuzData.juz}`
+                          : `/quran/${surah.number}`,
+                      )
+                    }
                     className="group flex min-h-28 cursor-pointer items-center gap-3 rounded-2xl border border-stone-200/80 bg-white p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md"
                   >
                     {/* Number */}
