@@ -9,8 +9,34 @@ function Quran() {
   const [selectedJuz, setSelectedJuz] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [lastRead, setLastRead] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadLastRead = () => {
+      const savedPosition = localStorage.getItem("huda-last-read");
+
+      if (!savedPosition) {
+        setLastRead(null);
+        return;
+      }
+
+      try {
+        setLastRead(JSON.parse(savedPosition));
+      } catch {
+        localStorage.removeItem("huda-last-read");
+        setLastRead(null);
+      }
+    };
+
+    loadLastRead();
+
+    window.addEventListener("focus", loadLastRead);
+
+    return () => {
+      window.removeEventListener("focus", loadLastRead);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchSurahs = async () => {
@@ -137,6 +163,45 @@ function Quran() {
           </div>
         </div>
       </section>
+
+      {/* TERAKHIR DIBACA */}
+      {lastRead && (
+        <section className="bg-[#fffdf8] px-5 pt-10 sm:px-8 sm:pt-12">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col gap-5 rounded-3xl border border-emerald-100 bg-emerald-50/70 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                  Terakhir Dibaca
+                </p>
+
+                <h2 className="mt-3 text-xl font-semibold text-emerald-950 sm:text-2xl">
+                  {lastRead.surahName}
+                  <span className="mx-2 text-emerald-300">·</span>
+                  Ayat {lastRead.ayah}
+                </h2>
+
+                <p className="mt-2 text-sm text-emerald-800/70">
+                  Juz {lastRead.juz} · Lanjutkan bacaanmu dari ayat yang
+                  terakhir ditandai.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    `/quran/juz/${lastRead.juz}?surah=${lastRead.surah}&ayah=${lastRead.ayah}`,
+                  )
+                }
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-emerald-950 px-6 py-3 text-sm font-medium text-white transition hover:bg-emerald-800"
+              >
+                Lanjutkan Membaca
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* DAFTAR SURAT */}
       <section className="bg-[#fffdf8] px-5 py-16 sm:px-8 sm:py-20">
