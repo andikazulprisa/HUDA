@@ -1,11 +1,15 @@
 import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
 
 function QuranJuz() {
   const { juzNumber } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const targetSurahNumber = searchParams.get("surah");
+  const surahRefs = useRef({});
 
   useEffect(() => {
     window.scrollTo({
@@ -77,6 +81,20 @@ function QuranJuz() {
 
   const previousJuz = Number(juzNumber) - 1;
   const nextJuz = Number(juzNumber) + 1;
+  useEffect(() => {
+    if (loading || !targetSurahNumber || surahs.length === 0) {
+      return;
+    }
+
+    const targetSurah = surahRefs.current[Number(targetSurahNumber)];
+
+    if (targetSurah) {
+      targetSurah.scrollIntoView({
+        behavior: "instant",
+        block: "start",
+      });
+    }
+  }, [loading, targetSurahNumber, surahs]);
 
   if (loading) {
     return (
@@ -155,7 +173,13 @@ function QuranJuz() {
         <div className="mx-auto max-w-4xl">
           <div className="space-y-10">
             {surahs.map((surah) => (
-              <section key={surah.number}>
+              <section
+                key={surah.number}
+                ref={(element) => {
+                  surahRefs.current[surah.number] = element;
+                }}
+                className="scroll-mt-24"
+              >
                 {/* Surah Header */}
                 <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-5 py-5">
                   <div className="flex items-center justify-between gap-4">
