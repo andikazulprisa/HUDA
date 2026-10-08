@@ -7,6 +7,14 @@ function QuranJuz() {
   const { juzNumber } = useParams();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant",
+    });
+  }, [juzNumber]);
+
   const [surahs, setSurahs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
