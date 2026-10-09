@@ -1,10 +1,17 @@
-import { ArrowLeft, BookOpen, BookmarkCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  BookmarkCheck,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
 
 const API_BASE = "https://quran-api-id.vercel.app";
 const LAST_READ_KEY = "huda-last-read";
+const TOTAL_SURAH = 114;
 
 function getSavedPosition() {
   try {
@@ -32,6 +39,9 @@ function QuranDetail() {
   // Data disimpan bersama nomor surat-nya, jadi loading dihitung
   // tanpa setState sinkron di dalam effect
   const [data, setData] = useState({ number: null, surah: null, error: "" });
+
+  // Daftar ringkas semua surat, dipakai untuk nama surat sebelumnya/berikutnya
+  const [surahList, setSurahList] = useState([]);
 
   const loading = data.number !== number;
   const surah = data.number === number ? data.surah : null;
@@ -84,6 +94,35 @@ function QuranDetail() {
     return () => controller.abort();
   }, [number]);
 
+  // Ambil daftar surat (untuk nama di tombol sebelumnya/berikutnya)
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchSurahList() {
+      try {
+        const response = await fetch(`${API_BASE}/surah`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) return;
+
+        const result = await response.json();
+
+        if (Array.isArray(result.data)) {
+          setSurahList(result.data);
+        }
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        // Gagal ambil daftar tidak fatal: tombol tetap tampil dengan nomor saja
+        console.error("Gagal mengambil daftar surat:", err);
+      }
+    }
+
+    fetchSurahList();
+
+    return () => controller.abort();
+  }, []);
+
   const selectedJuzData = useMemo(() => {
     if (!juzNumber) return null;
 
@@ -112,6 +151,14 @@ function QuranDetail() {
       );
     });
   }, [surah, currentJuzRange]);
+
+  // Surat sebelumnya & berikutnya
+  const currentSurahNumber = Number(number);
+  const previousSurahNumber = currentSurahNumber - 1;
+  const nextSurahNumber = currentSurahNumber + 1;
+
+  const previousSurah = surahList.find((s) => s.number === previousSurahNumber);
+  const nextSurah = surahList.find((s) => s.number === nextSurahNumber);
 
   // Scroll otomatis ke ayat yang dituju (?ayah=)
   useEffect(() => {
@@ -376,6 +423,54 @@ function QuranDetail() {
               );
             })}
           </div>
+
+          {/* NAVIGASI SURAT */}
+          <nav
+            aria-label="Navigasi surat"
+            className="mt-12 grid grid-cols-2 gap-3 border-t border-stone-200 pt-8"
+          >
+            {previousSurahNumber >= 1 ? (
+              <button
+                type="button"
+                onClick={() => navigate(`/quran/${previousSurahNumber}`)}
+                className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-4 text-left transition hover:border-emerald-200 hover:bg-emerald-50"
+              >
+                <ChevronLeft size={18} className="shrink-0 text-emerald-800" />
+
+                <div className="min-w-0">
+                  <p className="text-xs text-stone-400">Surat Sebelumnya</p>
+                  <p className="mt-1 truncate text-sm font-semibold text-emerald-950">
+                    {previousSurah
+                      ? previousSurah.name.transliteration.id
+                      : `Surat ${previousSurahNumber}`}
+                  </p>
+                </div>
+              </button>
+            ) : (
+              <div />
+            )}
+
+            {nextSurahNumber <= TOTAL_SURAH ? (
+              <button
+                type="button"
+                onClick={() => navigate(`/quran/${nextSurahNumber}`)}
+                className="flex items-center justify-end gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-4 text-right transition hover:border-emerald-200 hover:bg-emerald-50"
+              >
+                <div className="min-w-0">
+                  <p className="text-xs text-stone-400">Surat Berikutnya</p>
+                  <p className="mt-1 truncate text-sm font-semibold text-emerald-950">
+                    {nextSurah
+                      ? nextSurah.name.transliteration.id
+                      : `Surat ${nextSurahNumber}`}
+                  </p>
+                </div>
+
+                <ChevronRight size={18} className="shrink-0 text-emerald-800" />
+              </button>
+            ) : (
+              <div />
+            )}
+          </nav>
         </div>
       </section>
     </main>
