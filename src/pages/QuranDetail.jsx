@@ -24,8 +24,10 @@ function QuranDetail() {
   const targetAyahNumber = searchParams.get("ayah");
 
   const ayahRefs = useRef({});
+  const markTimerRef = useRef(null);
 
   const [lastRead, setLastRead] = useState(getSavedPosition);
+  const [justMarked, setJustMarked] = useState(null);
 
   // Data disimpan bersama nomor surat-nya, jadi loading dihitung
   // tanpa setState sinkron di dalam effect
@@ -42,6 +44,11 @@ function QuranDetail() {
     window.addEventListener("focus", syncLastRead);
 
     return () => window.removeEventListener("focus", syncLastRead);
+  }, []);
+
+  // Bersihkan timer efek saat unmount
+  useEffect(() => {
+    return () => clearTimeout(markTimerRef.current);
   }, []);
 
   // Ambil data surat
@@ -154,6 +161,11 @@ function QuranDetail() {
     }
 
     setLastRead(readingPosition);
+
+    // Efek sesaat: ikon mantul sekitar 1 detik
+    clearTimeout(markTimerRef.current);
+    setJustMarked(ayahNumber);
+    markTimerRef.current = setTimeout(() => setJustMarked(null), 1000);
   };
 
   if (loading) {
@@ -270,28 +282,37 @@ function QuranDetail() {
                 lastRead?.surah === Number(surah.number) &&
                 lastRead?.ayah === ayahNumber;
 
+              const isJustMarked = justMarked === ayahNumber;
+
               return (
                 <article
                   key={ayahNumber}
                   ref={(element) => {
                     ayahRefs.current[ayahNumber] = element;
                   }}
-                  className={`scroll-mt-24 rounded-2xl border bg-white p-5 shadow-sm transition md:p-7 ${
+                  className={`scroll-mt-24 rounded-2xl border p-5 shadow-sm transition-all duration-500 md:p-7 ${
                     isLastRead
-                      ? "border-amber-300 ring-1 ring-amber-200"
-                      : "border-stone-200/80"
+                      ? "border-amber-300 bg-amber-50/40 ring-1 ring-amber-200"
+                      : "border-stone-200/80 bg-white"
                   }`}
                 >
                   {/* NOMOR AYAT */}
                   <div className="mb-5 flex items-center justify-between">
-                    <div className="flex h-8 min-w-8 items-center justify-center rounded-full bg-emerald-50 px-2 text-xs font-semibold text-emerald-800">
+                    <div
+                      className={`flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-xs font-semibold transition-colors duration-500 ${
+                        isLastRead
+                          ? "bg-amber-300 text-emerald-950"
+                          : "bg-emerald-50 text-emerald-800"
+                      }`}
+                      aria-label={`Ayat ${ayahNumber}`}
+                    >
                       {ayahNumber}
                     </div>
 
                     {isLastRead && (
                       <span className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
-                        <BookmarkCheck size={15} />
-                        Penanda Terakhir Dibaca
+                        <BookmarkCheck size={15} aria-hidden="true" />
+                        Terakhir Dibaca
                       </span>
                     )}
                   </div>
@@ -313,28 +334,41 @@ function QuranDetail() {
                   )}
 
                   {/* TRANSLATION */}
-                  <div className="mt-4 border-t border-stone-100 pt-4">
+                  <div
+                    className={`mt-4 border-t pt-4 transition-colors duration-500 ${
+                      isLastRead ? "border-amber-200/70" : "border-stone-100"
+                    }`}
+                  >
                     <p className="text-sm leading-7 text-stone-600 sm:text-base sm:leading-8">
                       {verse.translation.id}
                     </p>
                   </div>
 
                   {/* PENANDA TERAKHIR DIBACA */}
-                  <div className="mt-5 border-t border-stone-100 pt-4">
+                  <div
+                    className={`mt-5 border-t pt-4 transition-colors duration-500 ${
+                      isLastRead ? "border-amber-200/70" : "border-stone-100"
+                    }`}
+                  >
                     <button
                       type="button"
                       onClick={() => handleMarkLastRead(ayahNumber)}
-                      disabled={isLastRead}
                       aria-pressed={isLastRead}
-                      className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-medium transition ${
+                      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-medium transition-all duration-300 active:scale-95 ${
                         isLastRead
-                          ? "cursor-default bg-amber-50 text-amber-700"
-                          : "bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
+                          ? "border-amber-300 bg-amber-100 text-amber-800"
+                          : "border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
                       }`}
                     >
-                      <BookmarkCheck size={15} />
+                      <BookmarkCheck
+                        size={15}
+                        aria-hidden="true"
+                        className={`transition-transform duration-300 ${
+                          isJustMarked ? "animate-bounce" : ""
+                        } ${isLastRead ? "scale-110" : ""}`}
+                      />
                       {isLastRead
-                        ? "✓ Penanda Terakhir Dibaca"
+                        ? "Penanda Terakhir Dibaca"
                         : "Tandai Terakhir Dibaca"}
                     </button>
                   </div>

@@ -1,4 +1,10 @@
-import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  BookmarkCheck,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
@@ -25,8 +31,10 @@ function QuranJuz() {
   const targetAyahNumber = searchParams.get("ayah");
   const surahRefs = useRef({});
   const ayahRefs = useRef({});
+  const markTimerRef = useRef(null);
 
   const [lastRead, setLastRead] = useState(getSavedPosition);
+  const [justMarked, setJustMarked] = useState(null);
 
   // Data disimpan bersama nomor juz-nya, jadi loading bisa dihitung
   // tanpa setState sinkron di dalam effect
@@ -53,6 +61,11 @@ function QuranJuz() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [juzNumber]);
+
+  // Bersihkan timer efek saat unmount
+  useEffect(() => {
+    return () => clearTimeout(markTimerRef.current);
+  }, []);
 
   // Ambil data juz
   useEffect(() => {
@@ -108,7 +121,7 @@ function QuranJuz() {
     return () => controller.abort();
   }, [selectedJuz]);
 
-  // Scroll ke surah tujuan (kalau ada ?surah=)
+  // Scroll ke ayat / surah tujuan (?surah= dan ?ayah=)
   useEffect(() => {
     if (loading || surahs.length === 0) {
       return;
@@ -161,6 +174,11 @@ function QuranJuz() {
     }
 
     setLastRead(readingPosition);
+
+    // Efek sesaat: ikon mantul sekitar 1 detik
+    clearTimeout(markTimerRef.current);
+    setJustMarked(`${surah.number}-${ayahNumber}`);
+    markTimerRef.current = setTimeout(() => setJustMarked(null), 1000);
   };
 
   const previousJuz = Number(juzNumber) - 1;
@@ -285,34 +303,51 @@ function QuranJuz() {
                 {/* Verses */}
                 <div className="space-y-3">
                   {surah.verses.map((verse) => {
+                    const ayahKey = `${surah.number}-${verse.number.inSurah}`;
+
                     const isMarked =
                       lastRead?.juz === Number(juzNumber) &&
                       lastRead?.surah === surah.number &&
                       lastRead?.ayah === verse.number.inSurah;
 
+                    const isJustMarked = justMarked === ayahKey;
+
                     return (
                       <article
                         key={verse.number.inSurah}
                         ref={(element) => {
-                          ayahRefs.current[
-                            `${surah.number}-${verse.number.inSurah}`
-                          ] = element;
+                          ayahRefs.current[ayahKey] = element;
                         }}
-                        className="scroll-mt-24 rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm md:p-7"
+                        className={`scroll-mt-24 rounded-2xl border p-5 shadow-sm transition-all duration-500 md:p-7 ${
+                          isMarked
+                            ? "border-amber-300 bg-amber-50/40 ring-1 ring-amber-200"
+                            : "border-stone-200/80 bg-white"
+                        }`}
                       >
                         {/* Nomor ayat */}
                         <div className="mb-4 flex items-center justify-between">
                           <span
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-xs font-semibold text-emerald-800"
+                            className={`flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-xs font-semibold transition-colors duration-500 ${
+                              isMarked
+                                ? "bg-amber-300 text-emerald-950"
+                                : "bg-emerald-50 text-emerald-800"
+                            }`}
                             aria-label={`Ayat ${verse.number.inSurah}`}
                           >
                             {verse.number.inSurah}
                           </span>
 
-                          <span className="text-xs text-stone-400">
-                            {surah.name.transliteration.id} :{" "}
-                            {verse.number.inSurah}
-                          </span>
+                          {isMarked ? (
+                            <span className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
+                              <BookmarkCheck size={15} aria-hidden="true" />
+                              Terakhir Dibaca
+                            </span>
+                          ) : (
+                            <span className="text-xs text-stone-400">
+                              {surah.name.transliteration.id} :{" "}
+                              {verse.number.inSurah}
+                            </span>
+                          )}
                         </div>
 
                         {/* Arabic */}
@@ -332,7 +367,13 @@ function QuranJuz() {
                         )}
 
                         {/* Translation + mark as read */}
-                        <div className="mt-4 border-t border-stone-100 pt-4">
+                        <div
+                          className={`mt-4 border-t pt-4 transition-colors duration-500 ${
+                            isMarked
+                              ? "border-amber-200/70"
+                              : "border-stone-100"
+                          }`}
+                        >
                           <p className="text-sm leading-7 text-stone-600 sm:text-base sm:leading-8">
                             {verse.translation.id}
                           </p>
@@ -343,14 +384,21 @@ function QuranJuz() {
                             onClick={() =>
                               handleMarkAsRead(surah, verse.number.inSurah)
                             }
-                            className={`mt-4 rounded-full border px-4 py-2 text-xs font-medium transition ${
+                            className={`mt-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition-all duration-300 active:scale-95 ${
                               isMarked
-                                ? "border-emerald-800 bg-emerald-50 text-emerald-900"
+                                ? "border-amber-300 bg-amber-100 text-amber-800"
                                 : "border-emerald-200 text-emerald-800 hover:bg-emerald-50"
                             }`}
                           >
+                            <BookmarkCheck
+                              size={15}
+                              aria-hidden="true"
+                              className={`transition-transform duration-300 ${
+                                isJustMarked ? "animate-bounce" : ""
+                              } ${isMarked ? "scale-110" : ""}`}
+                            />
                             {isMarked
-                              ? "✓ Penanda Terakhir Dibaca"
+                              ? "Penanda Terakhir Dibaca"
                               : "Tandai Terakhir Dibaca"}
                           </button>
                         </div>
