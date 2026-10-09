@@ -1,7 +1,7 @@
 import { Heart, Mail } from "lucide-react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import logoHuda from "../assets/logo huda 2.png";
+import logoHuda from "../assets/logo-huda.png";
 
 const exploreLinks = [
   { name: "Al-Qur'an", href: "/quran" },

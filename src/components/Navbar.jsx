@@ -1,7 +1,7 @@
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import logoHuda from "../assets/logo huda 2.png";
+import logoHuda from "../assets/logo-huda.png";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
