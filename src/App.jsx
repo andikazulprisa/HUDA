@@ -1,19 +1,21 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
+import ScrollToTop from "./components/ScrollToTop";
 
 import Home from "./pages/Home";
 import Quran from "./pages/Quran";
 import QuranDetail from "./pages/QuranDetail";
+import QuranJuz from "./pages/QuranJuz";
 import Hadith from "./pages/Hadith";
 import HadithDetail from "./pages/HadithDetail";
 import Dua from "./pages/Dua";
 import Sunnah from "./pages/Sunnah";
-import QuranJuz from "./pages/QuranJuz";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Navbar />
 
       <Routes>

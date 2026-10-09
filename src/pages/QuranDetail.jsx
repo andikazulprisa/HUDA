@@ -1,7 +1,19 @@
 import { ArrowLeft, BookOpen, BookmarkCheck } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
+
+const API_BASE = "https://quran-api-id.vercel.app";
+const LAST_READ_KEY = "huda-last-read";
+
+function getSavedPosition() {
+  try {
+    const saved = localStorage.getItem(LAST_READ_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
 
 function QuranDetail() {
   const { number } = useParams();
@@ -9,70 +21,70 @@ function QuranDetail() {
   const [searchParams] = useSearchParams();
 
   const juzNumber = searchParams.get("juz");
+  const targetAyahNumber = searchParams.get("ayah");
 
-  const [surah, setSurah] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [lastRead, setLastRead] = useState(null);
+  const ayahRefs = useRef({});
 
-  // Ambil penanda terakhir yang tersimpan
+  const [lastRead, setLastRead] = useState(getSavedPosition);
+
+  // Data disimpan bersama nomor surat-nya, jadi loading dihitung
+  // tanpa setState sinkron di dalam effect
+  const [data, setData] = useState({ number: null, surah: null, error: "" });
+
+  const loading = data.number !== number;
+  const surah = data.number === number ? data.surah : null;
+  const error = data.number === number ? data.error : "";
+
+  // Sinkronkan penanda saat tab kembali difokuskan
   useEffect(() => {
-    const loadLastRead = () => {
-      try {
-        const saved = localStorage.getItem("huda-last-read");
-        setLastRead(saved ? JSON.parse(saved) : null);
-      } catch {
-        setLastRead(null);
-      }
-    };
+    const syncLastRead = () => setLastRead(getSavedPosition());
 
-    loadLastRead();
-    window.addEventListener("focus", loadLastRead);
+    window.addEventListener("focus", syncLastRead);
 
-    return () => {
-      window.removeEventListener("focus", loadLastRead);
-    };
+    return () => window.removeEventListener("focus", syncLastRead);
   }, []);
 
   // Ambil data surat
   useEffect(() => {
-    const fetchSurah = async () => {
-      try {
-        setLoading(true);
-        setError("");
+    const controller = new AbortController();
 
-        const response = await fetch(
-          `https://quran-api-id.vercel.app/surah/${number}`,
-        );
+    async function fetchSurah() {
+      try {
+        const response = await fetch(`${API_BASE}/surah/${number}`, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error("Gagal mengambil data surat.");
         }
 
         const result = await response.json();
-        setSurah(result.data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
+
+        setData({ number, surah: result.data, error: "" });
+      } catch (err) {
+        if (err.name === "AbortError") return;
+
+        setData({
+          number,
+          surah: null,
+          error: err.message || "Terjadi kesalahan.",
+        });
       }
-    };
+    }
 
     fetchSurah();
+
+    return () => controller.abort();
   }, [number]);
 
   const selectedJuzData = useMemo(() => {
-    if (!juzNumber) {
-      return null;
-    }
+    if (!juzNumber) return null;
 
     return juzData.find((item) => item.juz === Number(juzNumber));
   }, [juzNumber]);
 
   const currentJuzRange = useMemo(() => {
-    if (!selectedJuzData) {
-      return null;
-    }
+    if (!selectedJuzData) return null;
 
     return selectedJuzData.ranges.find(
       (range) => range.surah === Number(number),
@@ -80,13 +92,9 @@ function QuranDetail() {
   }, [selectedJuzData, number]);
 
   const displayedVerses = useMemo(() => {
-    if (!surah) {
-      return [];
-    }
+    if (!surah) return [];
 
-    if (!currentJuzRange) {
-      return surah.verses;
-    }
+    if (!currentJuzRange) return surah.verses;
 
     return surah.verses.filter((verse) => {
       const ayahNumber = verse.number.inSurah;
@@ -97,6 +105,20 @@ function QuranDetail() {
       );
     });
   }, [surah, currentJuzRange]);
+
+  // Scroll otomatis ke ayat yang dituju (?ayah=)
+  useEffect(() => {
+    if (loading || !targetAyahNumber || displayedVerses.length === 0) return;
+
+    const targetAyah = ayahRefs.current[Number(targetAyahNumber)];
+
+    if (targetAyah) {
+      targetAyah.scrollIntoView({
+        behavior: "instant",
+        block: "start",
+      });
+    }
+  }, [loading, targetAyahNumber, displayedVerses]);
 
   // Cari Juz yang memuat ayat yang dipilih
   const getJuzForAyah = (surahNumber, ayahNumber) => {
@@ -114,9 +136,7 @@ function QuranDetail() {
 
   // Simpan penanda terakhir dibaca
   const handleMarkLastRead = (ayahNumber) => {
-    if (!surah) {
-      return;
-    }
+    if (!surah) return;
 
     const readingPosition = {
       mode: "surah",
@@ -127,7 +147,11 @@ function QuranDetail() {
       updatedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem("huda-last-read", JSON.stringify(readingPosition));
+    try {
+      localStorage.setItem(LAST_READ_KEY, JSON.stringify(readingPosition));
+    } catch (err) {
+      console.error("Gagal menyimpan penanda baca:", err);
+    }
 
     setLastRead(readingPosition);
   };
@@ -140,11 +164,11 @@ function QuranDetail() {
     );
   }
 
-  if (error) {
+  if (error || !surah) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#fffdf8] px-6">
         <div className="text-center">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">{error || "Surat tidak ditemukan."}</p>
 
           <button
             type="button"
@@ -213,6 +237,7 @@ function QuranDetail() {
 
             <div
               dir="rtl"
+              lang="ar"
               className="font-serif text-4xl text-emerald-100 md:text-5xl"
             >
               {surah.name.long}
@@ -248,7 +273,10 @@ function QuranDetail() {
               return (
                 <article
                   key={ayahNumber}
-                  className={`rounded-2xl border bg-white p-5 shadow-sm transition md:p-7 ${
+                  ref={(element) => {
+                    ayahRefs.current[ayahNumber] = element;
+                  }}
+                  className={`scroll-mt-24 rounded-2xl border bg-white p-5 shadow-sm transition md:p-7 ${
                     isLastRead
                       ? "border-amber-300 ring-1 ring-amber-200"
                       : "border-stone-200/80"
@@ -256,7 +284,7 @@ function QuranDetail() {
                 >
                   {/* NOMOR AYAT */}
                   <div className="mb-5 flex items-center justify-between">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-xs font-semibold text-emerald-800">
+                    <div className="flex h-8 min-w-8 items-center justify-center rounded-full bg-emerald-50 px-2 text-xs font-semibold text-emerald-800">
                       {ayahNumber}
                     </div>
 
@@ -271,15 +299,18 @@ function QuranDetail() {
                   {/* ARABIC */}
                   <p
                     dir="rtl"
+                    lang="ar"
                     className="text-right font-serif text-2xl leading-[2.15] text-emerald-950 sm:text-3xl md:text-4xl"
                   >
                     {verse.text.arab}
                   </p>
 
                   {/* TRANSLITERATION */}
-                  <p className="mt-5 text-sm italic leading-6 text-stone-400">
-                    {verse.text.transliteration.en}
-                  </p>
+                  {verse.text.transliteration?.en && (
+                    <p className="mt-5 text-sm italic leading-6 text-stone-400">
+                      {verse.text.transliteration.en}
+                    </p>
+                  )}
 
                   {/* TRANSLATION */}
                   <div className="mt-4 border-t border-stone-100 pt-4">
@@ -294,6 +325,7 @@ function QuranDetail() {
                       type="button"
                       onClick={() => handleMarkLastRead(ayahNumber)}
                       disabled={isLastRead}
+                      aria-pressed={isLastRead}
                       className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-medium transition ${
                         isLastRead
                           ? "cursor-default bg-amber-50 text-amber-700"
