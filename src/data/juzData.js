@@ -136,16 +136,6 @@ const juzData = [
     ],
   },
   {
-    juz: 14,
-    name: "Juz 14",
-    start: { surah: 15, ayah: 2 },
-    end: { surah: 16, ayah: 128 },
-    ranges: [
-      { surah: 15, startAyah: 2, endAyah: 99 },
-      { surah: 16, startAyah: 1, endAyah: 128 },
-    ],
-  },
-  {
     juz: 15,
     name: "Juz 15",
     start: { surah: 17, ayah: 1 },
