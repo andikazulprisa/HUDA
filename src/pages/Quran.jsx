@@ -188,11 +188,15 @@ function Quran() {
 
               <button
                 type="button"
-                onClick={() =>
-                  navigate(
-                    `/quran/juz/${lastRead.juz}?surah=${lastRead.surah}&ayah=${lastRead.ayah}`,
-                  )
-                }
+                onClick={() => {
+                  if (lastRead.mode === "surah") {
+                    navigate(`/quran/${lastRead.surah}?ayah=${lastRead.ayah}`);
+                  } else {
+                    navigate(
+                      `/quran/juz/${lastRead.juz}?surah=${lastRead.surah}&ayah=${lastRead.ayah}`,
+                    );
+                  }
+                }}
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-emerald-950 px-6 py-3 text-sm font-medium text-white transition hover:bg-emerald-800"
               >
                 Lanjutkan Membaca

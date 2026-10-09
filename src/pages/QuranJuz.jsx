@@ -146,6 +146,7 @@ function QuranJuz() {
 
   const handleMarkAsRead = (surah, ayahNumber) => {
     const readingPosition = {
+      mode: "juz",
       juz: Number(juzNumber),
       surah: surah.number,
       surahName: surah.name.transliteration.id,

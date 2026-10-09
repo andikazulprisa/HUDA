@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, BookmarkCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
@@ -13,7 +13,28 @@ function QuranDetail() {
   const [surah, setSurah] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lastRead, setLastRead] = useState(null);
 
+  // Ambil penanda terakhir yang tersimpan
+  useEffect(() => {
+    const loadLastRead = () => {
+      try {
+        const saved = localStorage.getItem("huda-last-read");
+        setLastRead(saved ? JSON.parse(saved) : null);
+      } catch {
+        setLastRead(null);
+      }
+    };
+
+    loadLastRead();
+    window.addEventListener("focus", loadLastRead);
+
+    return () => {
+      window.removeEventListener("focus", loadLastRead);
+    };
+  }, []);
+
+  // Ambil data surat
   useEffect(() => {
     const fetchSurah = async () => {
       try {
@@ -29,7 +50,6 @@ function QuranDetail() {
         }
 
         const result = await response.json();
-
         setSurah(result.data);
       } catch (error) {
         setError(error.message);
@@ -77,6 +97,40 @@ function QuranDetail() {
       );
     });
   }, [surah, currentJuzRange]);
+
+  // Cari Juz yang memuat ayat yang dipilih
+  const getJuzForAyah = (surahNumber, ayahNumber) => {
+    const matchingJuz = juzData.find((juz) =>
+      juz.ranges.some(
+        (range) =>
+          range.surah === Number(surahNumber) &&
+          ayahNumber >= range.startAyah &&
+          ayahNumber <= range.endAyah,
+      ),
+    );
+
+    return matchingJuz?.juz ?? 1;
+  };
+
+  // Simpan penanda terakhir dibaca
+  const handleMarkLastRead = (ayahNumber) => {
+    if (!surah) {
+      return;
+    }
+
+    const readingPosition = {
+      mode: "surah",
+      juz: getJuzForAyah(surah.number, ayahNumber),
+      surah: surah.number,
+      surahName: surah.name.transliteration.id,
+      ayah: ayahNumber,
+      updatedAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem("huda-last-read", JSON.stringify(readingPosition));
+
+    setLastRead(readingPosition);
+  };
 
   if (loading) {
     return (
@@ -184,39 +238,77 @@ function QuranDetail() {
           )}
 
           <div className="space-y-3">
-            {displayedVerses.map((verse) => (
-              <article
-                key={verse.number.inSurah}
-                className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm md:p-7"
-              >
-                {/* AYAT NUMBER */}
-                <div className="mb-5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-xs font-semibold text-emerald-800">
-                    {verse.number.inSurah}
-                  </div>
-                </div>
+            {displayedVerses.map((verse) => {
+              const ayahNumber = verse.number.inSurah;
 
-                {/* ARABIC */}
-                <p
-                  dir="rtl"
-                  className="text-right font-serif text-2xl leading-[2.15] text-emerald-950 sm:text-3xl md:text-4xl"
+              const isLastRead =
+                lastRead?.surah === Number(surah.number) &&
+                lastRead?.ayah === ayahNumber;
+
+              return (
+                <article
+                  key={ayahNumber}
+                  className={`rounded-2xl border bg-white p-5 shadow-sm transition md:p-7 ${
+                    isLastRead
+                      ? "border-amber-300 ring-1 ring-amber-200"
+                      : "border-stone-200/80"
+                  }`}
                 >
-                  {verse.text.arab}
-                </p>
+                  {/* NOMOR AYAT */}
+                  <div className="mb-5 flex items-center justify-between">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-xs font-semibold text-emerald-800">
+                      {ayahNumber}
+                    </div>
 
-                {/* TRANSLITERATION */}
-                <p className="mt-5 text-sm italic leading-6 text-stone-400">
-                  {verse.text.transliteration.en}
-                </p>
+                    {isLastRead && (
+                      <span className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
+                        <BookmarkCheck size={15} />
+                        Penanda Terakhir Dibaca
+                      </span>
+                    )}
+                  </div>
 
-                {/* TRANSLATION */}
-                <div className="mt-4 border-t border-stone-100 pt-4">
-                  <p className="text-sm leading-7 text-stone-600 sm:text-base sm:leading-8">
-                    {verse.translation.id}
+                  {/* ARABIC */}
+                  <p
+                    dir="rtl"
+                    className="text-right font-serif text-2xl leading-[2.15] text-emerald-950 sm:text-3xl md:text-4xl"
+                  >
+                    {verse.text.arab}
                   </p>
-                </div>
-              </article>
-            ))}
+
+                  {/* TRANSLITERATION */}
+                  <p className="mt-5 text-sm italic leading-6 text-stone-400">
+                    {verse.text.transliteration.en}
+                  </p>
+
+                  {/* TRANSLATION */}
+                  <div className="mt-4 border-t border-stone-100 pt-4">
+                    <p className="text-sm leading-7 text-stone-600 sm:text-base sm:leading-8">
+                      {verse.translation.id}
+                    </p>
+                  </div>
+
+                  {/* PENANDA TERAKHIR DIBACA */}
+                  <div className="mt-5 border-t border-stone-100 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => handleMarkLastRead(ayahNumber)}
+                      disabled={isLastRead}
+                      className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-medium transition ${
+                        isLastRead
+                          ? "cursor-default bg-amber-50 text-amber-700"
+                          : "bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
+                      }`}
+                    >
+                      <BookmarkCheck size={15} />
+                      {isLastRead
+                        ? "✓ Penanda Terakhir Dibaca"
+                        : "Tandai Terakhir Dibaca"}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
