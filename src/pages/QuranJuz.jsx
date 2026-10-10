@@ -8,6 +8,8 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
+import useQuranReadingSettings from "../hooks/useQuranReadingSettings";
+import QuranReadingSettings from "../components/QuranReadingSettings";
 
 const API_BASE = "https://quran-api-id.vercel.app";
 const LAST_READ_KEY = "huda-last-read";
@@ -26,6 +28,8 @@ function QuranJuz() {
   const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
+
+  const { settings, updateSetting } = useQuranReadingSettings();
 
   const targetSurahNumber = searchParams.get("surah");
   const targetAyahNumber = searchParams.get("ayah");
@@ -210,6 +214,13 @@ function QuranJuz() {
     );
   }
 
+  const spacingClass =
+    {
+      tight: "space-y-2",
+      normal: "space-y-3",
+      loose: "space-y-6",
+    }[settings.verseSpacing] || "space-y-3";
+
   return (
     <main className="min-h-screen bg-[#fffdf8]">
       {/* Header */}
@@ -260,6 +271,12 @@ function QuranJuz() {
       {/* Quran Content */}
       <section className="px-5 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-4xl">
+          {/* PENGATURAN TAMPILAN */}
+          <QuranReadingSettings
+            settings={settings}
+            updateSetting={updateSetting}
+          />
+
           <div className="space-y-10">
             {surahs.map((surah) => (
               <section
@@ -301,7 +318,7 @@ function QuranJuz() {
                 </div>
 
                 {/* Verses */}
-                <div className="space-y-3">
+                <div className={spacingClass}>
                   {surah.verses.map((verse) => {
                     const ayahKey = `${surah.number}-${verse.number.inSurah}`;
 
@@ -354,37 +371,55 @@ function QuranJuz() {
                         <p
                           dir="rtl"
                           lang="ar"
-                          className="text-right font-serif text-2xl leading-[2.15] text-emerald-950 sm:text-3xl md:text-4xl"
+                          style={{ fontSize: `${settings.arabFontSize}px` }}
+                          className="text-right font-serif leading-[2.15] text-emerald-950"
                         >
                           {verse.text.arab}
                         </p>
 
                         {/* Transliteration */}
-                        {verse.text.transliteration?.en && (
-                          <p className="mt-5 text-sm italic leading-6 text-stone-400">
-                            {verse.text.transliteration.en}
-                          </p>
+                        {settings.showTransliteration &&
+                          verse.text.transliteration?.en && (
+                            <p className="mt-5 text-sm italic leading-6 text-stone-400">
+                              {verse.text.transliteration.en}
+                            </p>
+                          )}
+
+                        {/* Translation */}
+                        {settings.showTranslation && (
+                          <div
+                            className={`mt-4 border-t pt-4 transition-colors duration-500 ${
+                              isMarked
+                                ? "border-amber-200/70"
+                                : "border-stone-100"
+                            }`}
+                          >
+                            <p
+                              style={{
+                                fontSize: `${settings.translationFontSize}px`,
+                              }}
+                              className="leading-7 text-stone-600 sm:leading-8"
+                            >
+                              {verse.translation.id}
+                            </p>
+                          </div>
                         )}
 
-                        {/* Translation + mark as read */}
+                        {/* Mark as read */}
                         <div
-                          className={`mt-4 border-t pt-4 transition-colors duration-500 ${
+                          className={`mt-5 border-t pt-4 transition-colors duration-500 ${
                             isMarked
                               ? "border-amber-200/70"
                               : "border-stone-100"
                           }`}
                         >
-                          <p className="text-sm leading-7 text-stone-600 sm:text-base sm:leading-8">
-                            {verse.translation.id}
-                          </p>
-
                           <button
                             type="button"
                             aria-pressed={isMarked}
                             onClick={() =>
                               handleMarkAsRead(surah, verse.number.inSurah)
                             }
-                            className={`mt-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition-all duration-300 active:scale-95 ${
+                            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition-all duration-300 active:scale-95 ${
                               isMarked
                                 ? "border-amber-300 bg-amber-100 text-amber-800"
                                 : "border-emerald-200 text-emerald-800 hover:bg-emerald-50"

@@ -8,6 +8,8 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
+import useQuranReadingSettings from "../hooks/useQuranReadingSettings";
+import QuranReadingSettings from "../components/QuranReadingSettings";
 
 const API_BASE = "https://quran-api-id.vercel.app";
 const LAST_READ_KEY = "huda-last-read";
@@ -27,6 +29,8 @@ function QuranDetail() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  const { settings, updateSetting } = useQuranReadingSettings();
+
   const juzNumber = searchParams.get("juz");
   const targetAyahNumber = searchParams.get("ayah");
 
@@ -36,11 +40,12 @@ function QuranDetail() {
   const [lastRead, setLastRead] = useState(getSavedPosition);
   const [justMarked, setJustMarked] = useState(null);
 
-  // Data disimpan bersama nomor surat-nya, jadi loading dihitung
-  // tanpa setState sinkron di dalam effect
-  const [data, setData] = useState({ number: null, surah: null, error: "" });
+  const [data, setData] = useState({
+    number: null,
+    surah: null,
+    error: "",
+  });
 
-  // Daftar ringkas semua surat, dipakai untuk nama surat sebelumnya/berikutnya
   const [surahList, setSurahList] = useState([]);
 
   const loading = data.number !== number;
@@ -56,7 +61,7 @@ function QuranDetail() {
     return () => window.removeEventListener("focus", syncLastRead);
   }, []);
 
-  // Bersihkan timer efek saat unmount
+  // Bersihkan timer saat halaman ditinggalkan
   useEffect(() => {
     return () => clearTimeout(markTimerRef.current);
   }, []);
@@ -77,7 +82,11 @@ function QuranDetail() {
 
         const result = await response.json();
 
-        setData({ number, surah: result.data, error: "" });
+        setData({
+          number,
+          surah: result.data,
+          error: "",
+        });
       } catch (err) {
         if (err.name === "AbortError") return;
 
@@ -94,7 +103,7 @@ function QuranDetail() {
     return () => controller.abort();
   }, [number]);
 
-  // Ambil daftar surat (untuk nama di tombol sebelumnya/berikutnya)
+  // Ambil daftar surat untuk navigasi
   useEffect(() => {
     const controller = new AbortController();
 
@@ -113,7 +122,7 @@ function QuranDetail() {
         }
       } catch (err) {
         if (err.name === "AbortError") return;
-        // Gagal ambil daftar tidak fatal: tombol tetap tampil dengan nomor saja
+
         console.error("Gagal mengambil daftar surat:", err);
       }
     }
@@ -152,17 +161,20 @@ function QuranDetail() {
     });
   }, [surah, currentJuzRange]);
 
-  // Surat sebelumnya & berikutnya
+  // Surat sebelumnya dan berikutnya
   const currentSurahNumber = Number(number);
   const previousSurahNumber = currentSurahNumber - 1;
   const nextSurahNumber = currentSurahNumber + 1;
 
   const previousSurah = surahList.find((s) => s.number === previousSurahNumber);
+
   const nextSurah = surahList.find((s) => s.number === nextSurahNumber);
 
-  // Scroll otomatis ke ayat yang dituju (?ayah=)
+  // Scroll otomatis ke ayat tujuan
   useEffect(() => {
-    if (loading || !targetAyahNumber || displayedVerses.length === 0) return;
+    if (loading || !targetAyahNumber || displayedVerses.length === 0) {
+      return;
+    }
 
     const targetAyah = ayahRefs.current[Number(targetAyahNumber)];
 
@@ -174,7 +186,7 @@ function QuranDetail() {
     }
   }, [loading, targetAyahNumber, displayedVerses]);
 
-  // Cari Juz yang memuat ayat yang dipilih
+  // Cari Juz yang memuat ayat
   const getJuzForAyah = (surahNumber, ayahNumber) => {
     const matchingJuz = juzData.find((juz) =>
       juz.ranges.some(
@@ -209,12 +221,15 @@ function QuranDetail() {
 
     setLastRead(readingPosition);
 
-    // Efek sesaat: ikon mantul sekitar 1 detik
     clearTimeout(markTimerRef.current);
     setJustMarked(ayahNumber);
-    markTimerRef.current = setTimeout(() => setJustMarked(null), 1000);
+
+    markTimerRef.current = setTimeout(() => {
+      setJustMarked(null);
+    }, 1000);
   };
 
+  // Loading
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#fffdf8]">
@@ -223,6 +238,7 @@ function QuranDetail() {
     );
   }
 
+  // Error
   if (error || !surah) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#fffdf8] px-6">
@@ -240,6 +256,13 @@ function QuranDetail() {
       </main>
     );
   }
+
+  const spacingClass =
+    {
+      tight: "space-y-2",
+      normal: "space-y-3",
+      loose: "space-y-6",
+    }[settings.verseSpacing] || "space-y-3";
 
   return (
     <main className="min-h-screen bg-[#fffdf8]">
@@ -321,7 +344,14 @@ function QuranDetail() {
             </div>
           )}
 
-          <div className="space-y-3">
+          {/* PENGATURAN TAMPILAN */}
+          <QuranReadingSettings
+            settings={settings}
+            updateSetting={updateSetting}
+          />
+
+          {/* DAFTAR AYAT */}
+          <div className={spacingClass}>
             {displayedVerses.map((verse) => {
               const ayahNumber = verse.number.inSurah;
 
@@ -364,32 +394,43 @@ function QuranDetail() {
                     )}
                   </div>
 
-                  {/* ARABIC */}
+                  {/* TEKS ARAB */}
                   <p
                     dir="rtl"
                     lang="ar"
-                    className="text-right font-serif text-2xl leading-[2.15] text-emerald-950 sm:text-3xl md:text-4xl"
+                    style={{
+                      fontSize: `${settings.arabFontSize}px`,
+                    }}
+                    className="text-right font-serif leading-[2.15] text-emerald-950"
                   >
                     {verse.text.arab}
                   </p>
 
-                  {/* TRANSLITERATION */}
-                  {verse.text.transliteration?.en && (
-                    <p className="mt-5 text-sm italic leading-6 text-stone-400">
-                      {verse.text.transliteration.en}
-                    </p>
-                  )}
+                  {/* TRANSLITERASI LATIN */}
+                  {settings.showTransliteration &&
+                    verse.text.transliteration?.en && (
+                      <p className="mt-5 text-sm italic leading-6 text-stone-400">
+                        {verse.text.transliteration.en}
+                      </p>
+                    )}
 
-                  {/* TRANSLATION */}
-                  <div
-                    className={`mt-4 border-t pt-4 transition-colors duration-500 ${
-                      isLastRead ? "border-amber-200/70" : "border-stone-100"
-                    }`}
-                  >
-                    <p className="text-sm leading-7 text-stone-600 sm:text-base sm:leading-8">
-                      {verse.translation.id}
-                    </p>
-                  </div>
+                  {/* TERJEMAHAN INDONESIA */}
+                  {settings.showTranslation && (
+                    <div
+                      className={`mt-4 border-t pt-4 transition-colors duration-500 ${
+                        isLastRead ? "border-amber-200/70" : "border-stone-100"
+                      }`}
+                    >
+                      <p
+                        style={{
+                          fontSize: `${settings.translationFontSize}px`,
+                        }}
+                        className="leading-7 text-stone-600 sm:leading-8"
+                      >
+                        {verse.translation.id}
+                      </p>
+                    </div>
+                  )}
 
                   {/* PENANDA TERAKHIR DIBACA */}
                   <div
@@ -414,6 +455,7 @@ function QuranDetail() {
                           isJustMarked ? "animate-bounce" : ""
                         } ${isLastRead ? "scale-110" : ""}`}
                       />
+
                       {isLastRead
                         ? "Penanda Terakhir Dibaca"
                         : "Tandai Terakhir Dibaca"}
@@ -439,6 +481,7 @@ function QuranDetail() {
 
                 <div className="min-w-0">
                   <p className="text-xs text-stone-400">Surat Sebelumnya</p>
+
                   <p className="mt-1 truncate text-sm font-semibold text-emerald-950">
                     {previousSurah
                       ? previousSurah.name.transliteration.id
@@ -458,6 +501,7 @@ function QuranDetail() {
               >
                 <div className="min-w-0">
                   <p className="text-xs text-stone-400">Surat Berikutnya</p>
+
                   <p className="mt-1 truncate text-sm font-semibold text-emerald-950">
                     {nextSurah
                       ? nextSurah.name.transliteration.id
