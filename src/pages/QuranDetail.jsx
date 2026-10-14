@@ -1,15 +1,10 @@
-import {
-  ArrowLeft,
-  BookOpen,
-  BookmarkCheck,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
 import useQuranReadingSettings from "../hooks/useQuranReadingSettings";
 import QuranReadingSettings from "../components/QuranReadingSettings";
+import VerseCard from "../components/VerseCard";
 
 const API_BASE = "https://quran-api-id.vercel.app";
 const LAST_READ_KEY = "huda-last-read";
@@ -167,7 +162,6 @@ function QuranDetail() {
   const nextSurahNumber = currentSurahNumber + 1;
 
   const previousSurah = surahList.find((s) => s.number === previousSurahNumber);
-
   const nextSurah = surahList.find((s) => s.number === nextSurahNumber);
 
   // Scroll otomatis ke ayat tujuan
@@ -344,7 +338,7 @@ function QuranDetail() {
             </div>
           )}
 
-          {/* PENGATURAN TAMPILAN */}
+          {/* PENGATURAN TAMPILAN (default untuk semua ayat) */}
           <QuranReadingSettings
             settings={settings}
             updateSetting={updateSetting}
@@ -359,109 +353,20 @@ function QuranDetail() {
                 lastRead?.surah === Number(surah.number) &&
                 lastRead?.ayah === ayahNumber;
 
-              const isJustMarked = justMarked === ayahNumber;
-
               return (
-                <article
+                <VerseCard
                   key={ayahNumber}
-                  ref={(element) => {
+                  verse={verse}
+                  surahNumber={surah.number}
+                  surahName={surah.name.transliteration.id}
+                  settings={settings}
+                  isMarked={isLastRead}
+                  isJustMarked={justMarked === ayahNumber}
+                  onMark={() => handleMarkLastRead(ayahNumber)}
+                  registerRef={(element) => {
                     ayahRefs.current[ayahNumber] = element;
                   }}
-                  className={`scroll-mt-24 rounded-2xl border p-5 shadow-sm transition-all duration-500 md:p-7 ${
-                    isLastRead
-                      ? "border-amber-300 bg-amber-50/40 ring-1 ring-amber-200"
-                      : "border-stone-200/80 bg-white"
-                  }`}
-                >
-                  {/* NOMOR AYAT */}
-                  <div className="mb-5 flex items-center justify-between">
-                    <div
-                      className={`flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-xs font-semibold transition-colors duration-500 ${
-                        isLastRead
-                          ? "bg-amber-300 text-emerald-950"
-                          : "bg-emerald-50 text-emerald-800"
-                      }`}
-                      aria-label={`Ayat ${ayahNumber}`}
-                    >
-                      {ayahNumber}
-                    </div>
-
-                    {isLastRead && (
-                      <span className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
-                        <BookmarkCheck size={15} aria-hidden="true" />
-                        Terakhir Dibaca
-                      </span>
-                    )}
-                  </div>
-
-                  {/* TEKS ARAB */}
-                  <p
-                    dir="rtl"
-                    lang="ar"
-                    style={{
-                      fontSize: `${settings.arabFontSize}px`,
-                    }}
-                    className="text-right font-serif leading-[2.15] text-emerald-950"
-                  >
-                    {verse.text.arab}
-                  </p>
-
-                  {/* TRANSLITERASI LATIN */}
-                  {settings.showTransliteration &&
-                    verse.text.transliteration?.en && (
-                      <p className="mt-5 text-sm italic leading-6 text-stone-400">
-                        {verse.text.transliteration.en}
-                      </p>
-                    )}
-
-                  {/* TERJEMAHAN INDONESIA */}
-                  {settings.showTranslation && (
-                    <div
-                      className={`mt-4 border-t pt-4 transition-colors duration-500 ${
-                        isLastRead ? "border-amber-200/70" : "border-stone-100"
-                      }`}
-                    >
-                      <p
-                        style={{
-                          fontSize: `${settings.translationFontSize}px`,
-                        }}
-                        className="leading-7 text-stone-600 sm:leading-8"
-                      >
-                        {verse.translation.id}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* PENANDA TERAKHIR DIBACA */}
-                  <div
-                    className={`mt-5 border-t pt-4 transition-colors duration-500 ${
-                      isLastRead ? "border-amber-200/70" : "border-stone-100"
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleMarkLastRead(ayahNumber)}
-                      aria-pressed={isLastRead}
-                      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-medium transition-all duration-300 active:scale-95 ${
-                        isLastRead
-                          ? "border-amber-300 bg-amber-100 text-amber-800"
-                          : "border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
-                      }`}
-                    >
-                      <BookmarkCheck
-                        size={15}
-                        aria-hidden="true"
-                        className={`transition-transform duration-300 ${
-                          isJustMarked ? "animate-bounce" : ""
-                        } ${isLastRead ? "scale-110" : ""}`}
-                      />
-
-                      {isLastRead
-                        ? "Penanda Terakhir Dibaca"
-                        : "Tandai Terakhir Dibaca"}
-                    </button>
-                  </div>
-                </article>
+                />
               );
             })}
           </div>

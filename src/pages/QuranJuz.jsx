@@ -1,15 +1,10 @@
-import {
-  ArrowLeft,
-  BookOpen,
-  BookmarkCheck,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import juzData from "../data/juzData";
 import useQuranReadingSettings from "../hooks/useQuranReadingSettings";
 import QuranReadingSettings from "../components/QuranReadingSettings";
+import VerseCard from "../components/VerseCard";
 
 const API_BASE = "https://quran-api-id.vercel.app";
 const LAST_READ_KEY = "huda-last-read";
@@ -271,7 +266,7 @@ function QuranJuz() {
       {/* Quran Content */}
       <section className="px-5 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-4xl">
-          {/* PENGATURAN TAMPILAN */}
+          {/* PENGATURAN TAMPILAN (default untuk semua ayat) */}
           <QuranReadingSettings
             settings={settings}
             updateSetting={updateSetting}
@@ -320,124 +315,29 @@ function QuranJuz() {
                 {/* Verses */}
                 <div className={spacingClass}>
                   {surah.verses.map((verse) => {
-                    const ayahKey = `${surah.number}-${verse.number.inSurah}`;
+                    const ayahNumber = verse.number.inSurah;
+                    const ayahKey = `${surah.number}-${ayahNumber}`;
 
                     const isMarked =
                       lastRead?.juz === Number(juzNumber) &&
                       lastRead?.surah === surah.number &&
-                      lastRead?.ayah === verse.number.inSurah;
-
-                    const isJustMarked = justMarked === ayahKey;
+                      lastRead?.ayah === ayahNumber;
 
                     return (
-                      <article
-                        key={verse.number.inSurah}
-                        ref={(element) => {
+                      <VerseCard
+                        key={ayahNumber}
+                        verse={verse}
+                        surahNumber={surah.number}
+                        surahName={surah.name.transliteration.id}
+                        settings={settings}
+                        isMarked={isMarked}
+                        isJustMarked={justMarked === ayahKey}
+                        showSurahLabel
+                        onMark={() => handleMarkAsRead(surah, ayahNumber)}
+                        registerRef={(element) => {
                           ayahRefs.current[ayahKey] = element;
                         }}
-                        className={`scroll-mt-24 rounded-2xl border p-5 shadow-sm transition-all duration-500 md:p-7 ${
-                          isMarked
-                            ? "border-amber-300 bg-amber-50/40 ring-1 ring-amber-200"
-                            : "border-stone-200/80 bg-white"
-                        }`}
-                      >
-                        {/* Nomor ayat */}
-                        <div className="mb-4 flex items-center justify-between">
-                          <span
-                            className={`flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-xs font-semibold transition-colors duration-500 ${
-                              isMarked
-                                ? "bg-amber-300 text-emerald-950"
-                                : "bg-emerald-50 text-emerald-800"
-                            }`}
-                            aria-label={`Ayat ${verse.number.inSurah}`}
-                          >
-                            {verse.number.inSurah}
-                          </span>
-
-                          {isMarked ? (
-                            <span className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
-                              <BookmarkCheck size={15} aria-hidden="true" />
-                              Terakhir Dibaca
-                            </span>
-                          ) : (
-                            <span className="text-xs text-stone-400">
-                              {surah.name.transliteration.id} :{" "}
-                              {verse.number.inSurah}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Arabic */}
-                        <p
-                          dir="rtl"
-                          lang="ar"
-                          style={{ fontSize: `${settings.arabFontSize}px` }}
-                          className="text-right font-serif leading-[2.15] text-emerald-950"
-                        >
-                          {verse.text.arab}
-                        </p>
-
-                        {/* Transliteration */}
-                        {settings.showTransliteration &&
-                          verse.text.transliteration?.en && (
-                            <p className="mt-5 text-sm italic leading-6 text-stone-400">
-                              {verse.text.transliteration.en}
-                            </p>
-                          )}
-
-                        {/* Translation */}
-                        {settings.showTranslation && (
-                          <div
-                            className={`mt-4 border-t pt-4 transition-colors duration-500 ${
-                              isMarked
-                                ? "border-amber-200/70"
-                                : "border-stone-100"
-                            }`}
-                          >
-                            <p
-                              style={{
-                                fontSize: `${settings.translationFontSize}px`,
-                              }}
-                              className="leading-7 text-stone-600 sm:leading-8"
-                            >
-                              {verse.translation.id}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Mark as read */}
-                        <div
-                          className={`mt-5 border-t pt-4 transition-colors duration-500 ${
-                            isMarked
-                              ? "border-amber-200/70"
-                              : "border-stone-100"
-                          }`}
-                        >
-                          <button
-                            type="button"
-                            aria-pressed={isMarked}
-                            onClick={() =>
-                              handleMarkAsRead(surah, verse.number.inSurah)
-                            }
-                            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition-all duration-300 active:scale-95 ${
-                              isMarked
-                                ? "border-amber-300 bg-amber-100 text-amber-800"
-                                : "border-emerald-200 text-emerald-800 hover:bg-emerald-50"
-                            }`}
-                          >
-                            <BookmarkCheck
-                              size={15}
-                              aria-hidden="true"
-                              className={`transition-transform duration-300 ${
-                                isJustMarked ? "animate-bounce" : ""
-                              } ${isMarked ? "scale-110" : ""}`}
-                            />
-                            {isMarked
-                              ? "Penanda Terakhir Dibaca"
-                              : "Tandai Terakhir Dibaca"}
-                          </button>
-                        </div>
-                      </article>
+                      />
                     );
                   })}
                 </div>
